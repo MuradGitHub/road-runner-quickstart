@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 public class TestAutoMotor extends LinearOpMode {
@@ -15,12 +16,15 @@ public class TestAutoMotor extends LinearOpMode {
     Telemetry.Item powerItem;
     Telemetry.Item directionItem;
     Telemetry.Item positionItem;
+    Telemetry.Item velocityItem;
+    Telemetry.Item velocityTargetItem;
     Telemetry.Item targetItem;
     Telemetry.Item modeItem;
     Telemetry.Item zeroPowerItem;
     Telemetry.Item powerFloatItem;
     Telemetry.Item positionTolItem;
     Telemetry.Item isBusyItem;
+
     @Override
     public void runOpMode(){
         motor_1      = hardwareMap.get(DcMotorEx.class, "motor-1");
@@ -30,7 +34,8 @@ public class TestAutoMotor extends LinearOpMode {
         waitForStart();
 
         // runMotorCrescendo();
-        runMotorTargets();
+        // runMotorTargets();
+        runMotorVelocities();
 
         while(opModeIsActive());
     }
@@ -51,6 +56,32 @@ public class TestAutoMotor extends LinearOpMode {
             }
             updateTelemetryMotor_1("motor_1 Not Busy");
             sleep(target_pause_time);
+        }
+    }
+
+    private void runMotorVelocities() {
+        int[] velocities        = {0, 10, 20, 30, 40, 50, 60, 90, 120, 360, 720};
+        int   target_pause_time = 10000; // ms
+        int   tracking_time     = 50;
+        motor_1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor_1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor_1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        for(int velocity: velocities) {
+            motor_1.setVelocity(velocity, AngleUnit.DEGREES);
+            // motor_1.setPower(1.0);
+            while(motor_1.isBusy()) {
+                updateTelemetryMotor_1("motor_1 Busy", velocity);
+                sleep(tracking_time);
+            }
+            updateTelemetryMotor_1("motor_1 Not Busy", velocity);
+            sleep((long) (target_pause_time / 2.0));
+            updateTelemetryMotor_1("motor_1 Not Busy - After Sleep", velocity);
+            sleep((long) (target_pause_time / 2.0));
+        }
+        while(opModeIsActive()) {
+            updateTelemetryMotor_1("motor_1 Not Busy - Steady State",
+                    velocities[velocities.length-1]);
+            sleep((long) (target_pause_time / 2.0));
         }
     }
 
@@ -75,28 +106,37 @@ public class TestAutoMotor extends LinearOpMode {
         // telemetry.addData("motor-1.getPortNumber() ", motor_1.getPortNumber());
         // telemetry.addData("motor-1.getMotorType()  ", motor_1.getMotorType());
 
-        statusItem      = telemetry.addData("status                                ",
+        statusItem         = telemetry.addData("status                                ",
                 "Initializing Telemetry");
-        powerItem       = telemetry.addData("motor-1.getPower()                    ",
+        powerItem          = telemetry.addData("motor-1.getPower()                    ",
                 motor_1.getPower());
-        directionItem   = telemetry.addData("motor-1.getDirection()                ",
+        directionItem      = telemetry.addData("motor-1.getDirection()                ",
                 motor_1.getDirection());
-        positionItem    = telemetry.addData("motor-1.getCurrentPosition()          ",
+        positionItem       = telemetry.addData("motor-1.getCurrentPosition()          ",
                 motor_1.getCurrentPosition());
-        targetItem      = telemetry.addData("motor-1.getTargetPosition()           ",
+        velocityItem       = telemetry.addData("motor-1.getVelocity()                 ",
+                motor_1.getVelocity(AngleUnit.DEGREES));
+        velocityTargetItem = telemetry.addData("motor-1: Target Velocity:             ",
+                0.0);
+        targetItem         = telemetry.addData("motor-1.getTargetPosition()           ",
                 motor_1.getTargetPosition());
-        modeItem        = telemetry.addData("motor-1.getMode()                     ",
+        modeItem           = telemetry.addData("motor-1.getMode()                     ",
                 motor_1.getMode());
-        zeroPowerItem   = telemetry.addData("motor-1.getZeroPowerBehavior()        ",
+        zeroPowerItem      = telemetry.addData("motor-1.getZeroPowerBehavior()        ",
                 motor_1.getZeroPowerBehavior());
-        powerFloatItem  = telemetry.addData("motor-1.getPowerFloat()               ",
+        powerFloatItem     = telemetry.addData("motor-1.getPowerFloat()               ",
                 motor_1.getPowerFloat());
-        positionTolItem = telemetry.addData("motor-1.getTargetPositionTolerance()  ",
+        positionTolItem    = telemetry.addData("motor-1.getTargetPositionTolerance()  ",
                 motor_1.getTargetPositionTolerance());
-        isBusyItem      = telemetry.addData("motor-1.isBusy()                      ",
+        isBusyItem         = telemetry.addData("motor-1.isBusy()                      ",
                 motor_1.isBusy());
 
         telemetry.update();
+    }
+
+    private void updateTelemetryMotor_1(String status, double velocityTarget) {
+        velocityTargetItem.setValue(velocityTarget);
+        updateTelemetryMotor_1(status);
     }
     private void updateTelemetryMotor_1(String status) {
         statusItem.setValue(status);
@@ -104,6 +144,7 @@ public class TestAutoMotor extends LinearOpMode {
         directionItem.setValue(motor_1.getDirection());
         targetItem.setValue(motor_1.getTargetPosition());
         positionItem.setValue(motor_1.getCurrentPosition());
+        velocityItem.setValue(motor_1.getVelocity(AngleUnit.DEGREES));
         modeItem.setValue(motor_1.getMode());
         zeroPowerItem.setValue(motor_1.getZeroPowerBehavior());
         powerFloatItem.setValue(motor_1.getPowerFloat());
