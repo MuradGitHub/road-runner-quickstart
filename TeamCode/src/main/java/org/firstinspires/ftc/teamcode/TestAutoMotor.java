@@ -17,9 +17,9 @@ public class TestAutoMotor extends LinearOpMode {
     Telemetry.Item powerItem;
     Telemetry.Item directionItem;
     Telemetry.Item positionItem;
+    Telemetry.Item targetItem;
     Telemetry.Item velocityItem;
     Telemetry.Item velocityTargetItem;
-    Telemetry.Item targetItem;
     Telemetry.Item modeItem;
     Telemetry.Item zeroPowerItem;
     Telemetry.Item powerFloatItem;
@@ -39,8 +39,8 @@ public class TestAutoMotor extends LinearOpMode {
         waitForStart();
 
         // runMotorCrescendo();
-        // runMotorTargets();
-        runMotorVelocities();
+        runMotorTargets();
+        // runMotorVelocities();
 
         while(opModeIsActive());
     }
@@ -60,9 +60,11 @@ public class TestAutoMotor extends LinearOpMode {
                 updateTelemetryMotor_1("motor_1 Busy", DcMotor.RunMode.RUN_TO_POSITION);
                 sleep(tracking_time);
             }
-            updateTelemetryMotor_1("motor_1 Not Busy", DcMotor.RunMode.RUN_TO_POSITION);
+            updateTelemetryMotor_1("motor_1 Not Busy",
+                    DcMotor.RunMode.RUN_TO_POSITION);
             sleep((long) (target_pause_time / 2.0));
-            updateTelemetryMotor_1("motor_1 Not Busy", DcMotor.RunMode.RUN_TO_POSITION);
+            updateTelemetryMotor_1("motor_1 Not Busy - After Sleep",
+                    DcMotor.RunMode.RUN_TO_POSITION);
             sleep((long) (target_pause_time / 2.0));
         }
         while(opModeIsActive()) {
@@ -135,14 +137,14 @@ public class TestAutoMotor extends LinearOpMode {
                 motor_1.getPower());
         directionItem         = telemetry.addData("motor-1.getDirection()                ",
                 motor_1.getDirection());
-        positionItem          = telemetry.addData("motor-1.getCurrentPosition()          ",
-                motor_1.getCurrentPosition());
-        velocityItem          = telemetry.addData("motor-1.getVelocity()                 ",
-                motor_1.getVelocity(AngleUnit.DEGREES));
-        velocityTargetItem    = telemetry.addData("motor-1: Target Velocity:             ",
-                0.0);
         targetItem            = telemetry.addData("motor-1.getTargetPosition()           ",
                 motor_1.getTargetPosition());
+        positionItem          = telemetry.addData("motor-1.getCurrentPosition()          ",
+                motor_1.getCurrentPosition());
+        velocityTargetItem    = telemetry.addData("motor-1: Target Velocity:             ",
+                0.0);
+        velocityItem          = telemetry.addData("motor-1.getVelocity()                 ",
+                motor_1.getVelocity(AngleUnit.DEGREES));
         modeItem              = telemetry.addData("motor-1.getMode()                     ",
                 motor_1.getMode());
         zeroPowerItem         = telemetry.addData("motor-1.getZeroPowerBehavior()        ",
